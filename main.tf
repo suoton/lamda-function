@@ -19,13 +19,12 @@ data "aws_lambda_function" "file_processor" {
 
 # Attach IAM policy to existing role
 resource "aws_iam_policy_attachment" "lambda_policy" {
-  count      = length(data.aws_iam_role.lambda_execution_role) > 0 ? 1 : 0
   name       = "lambda_policy_attachment"
   roles      = [data.aws_iam_role.lambda_execution_role.name]
   policy_arn = "arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole"
 }
 
-# Create or use existing Lambda function
+# Create Lambda function only if it doesn't exist
 resource "aws_lambda_function" "file_processor" {
   count        = length(data.aws_lambda_function.file_processor) > 0 ? 0 : 1
   function_name = "file_processor"
@@ -62,7 +61,7 @@ resource "aws_api_gateway_integration" "lambda" {
 
   integration_http_method = "POST"
   type                    = "AWS_PROXY"
-  uri                     = aws_lambda_function.file_processor[0].invoke_arn
+  uri                     = length(data.aws_lambda_function.file_processor) > 0 ? data.aws_lambda_function.file_processor[0].invoke_arn : aws_lambda_function.file_processor[0].invoke_arn
 }
 
 output "invoke_url" {
