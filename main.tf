@@ -61,7 +61,7 @@ resource "aws_api_gateway_integration" "lambda" {
 
   integration_http_method = "POST"
   type                    = "AWS_PROXY"
-  uri                     = length(data.aws_lambda_function.file_processor) > 0 ? data.aws_lambda_function.file_processor[0].invoke_arn : aws_lambda_function.file_processor[0].invoke_arn
+  uri                     = length(data.aws_lambda_function.file_processor) > 0 ? data.aws_lambda_function.file_processor.invoke_arn : aws_lambda_function.file_processor[0].invoke_arn
 }
 
 output "invoke_url" {
