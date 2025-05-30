@@ -2,30 +2,19 @@ provider "aws" {
   region = "eu-north-1" # Change to your desired region
 }
 
-resource "aws_s3_bucket" "file_upload_bucket" {
-  bucket = "suoton" # Ensure this is globally unique
-  # Removed deprecated acl attribute
+# Use existing S3 bucket
+data "aws_s3_bucket" "file_upload_bucket" {
+  bucket = "suoton" # Ensure this is the existing bucket name
 }
 
-resource "aws_iam_role" "lambda_execution_role" {
-  name = "lambda_execution_role"
-
-  assume_role_policy = jsonencode({
-    Version = "2012-10-17"
-    Statement = [{
-      Action = "sts:AssumeRole"
-      Principal = {
-        Service = "lambda.amazonaws.com"
-      }
-      Effect = "Allow"
-      Sid    = ""
-    }]
-  })
+# Use existing IAM role
+data "aws_iam_role" "lambda_execution_role" {
+  name = "lambda_execution_role" # Ensure this is the existing role name
 }
 
 resource "aws_iam_policy_attachment" "lambda_policy" {
   name       = "lambda_policy_attachment"
-  roles      = [aws_iam_role.lambda_execution_role.name]
+  roles      = [data.aws_iam_role.lambda_execution_role.name]
   policy_arn = "arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole"
 }
 
@@ -33,8 +22,8 @@ resource "aws_lambda_function" "file_processor" {
   function_name = "file_processor"
   handler       = "lambda_function.lambda_handler"
   runtime       = "python3.8" # Change based on your code version
-  role          = aws_iam_role.lambda_execution_role.arn
-  s3_bucket     = aws_s3_bucket.file_upload_bucket.bucket
+  role          = data.aws_iam_role.lambda_execution_role.arn
+  s3_bucket     = data.aws_s3_bucket.file_upload_bucket.id
   s3_key        = "lambda_function.zip" # Update after uploading
 }
 
