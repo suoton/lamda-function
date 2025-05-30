@@ -6,8 +6,10 @@ pipeline {
                 script {
                     // Zip Lambda function
                     sh 'zip lambda_function.zip lambda_function.py'
-                    // Upload to S3
-                    sh 'aws s3 cp lambda_function.zip s3://suoton/'
+                    // Upload to S3 with AWS credentials
+                    withCredentials([[$class: 'AmazonWebServicesCredentialsBinding', credentialsId: 'aws-credentials']]) {
+                        sh 'aws s3 cp lambda_function.zip s3://suoton/'
+                    }
                 }
             }
         }
@@ -15,7 +17,9 @@ pipeline {
             steps {
                 script {
                     // Initialize Terraform
-                    sh 'terraform init'
+                    withCredentials([[$class: 'AmazonWebServicesCredentialsBinding', credentialsId: 'aws-credentials']]) {
+                        sh 'terraform init'
+                    }
                 }
             }
         }
@@ -23,7 +27,9 @@ pipeline {
             steps {
                 script {
                     // Apply Terraform configuration
-                    sh 'terraform apply -auto-approve'
+                    withCredentials([[$class: 'AmazonWebServicesCredentialsBinding', credentialsId: 'aws-credentials']]) {
+                        sh 'terraform apply -auto-approve'
+                    }
                 }
             }
         }
