@@ -12,6 +12,11 @@ data "aws_iam_role" "lambda_execution_role" {
   name = "lambda_execution_role" # Ensure this is the existing role name
 }
 
+# Check for existing Lambda function
+data "aws_lambda_function" "file_processor" {
+  function_name = "file_processor" # Name of the Lambda function
+}
+
 # Attach IAM policy to existing role
 resource "aws_iam_policy_attachment" "lambda_policy" {
   count      = length(data.aws_iam_role.lambda_execution_role) > 0 ? 1 : 0
@@ -20,7 +25,7 @@ resource "aws_iam_policy_attachment" "lambda_policy" {
   policy_arn = "arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole"
 }
 
-# Use existing Lambda function if it exists, otherwise create a new one
+# Create or use existing Lambda function
 resource "aws_lambda_function" "file_processor" {
   count        = length(data.aws_lambda_function.file_processor) > 0 ? 0 : 1
   function_name = "file_processor"
